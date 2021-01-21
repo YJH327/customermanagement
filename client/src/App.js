@@ -3,8 +3,12 @@ import { Customertablehead, Customertablebody } from './componenets/Customer'
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableContainer from '@material-ui/core/TableContainer';
+import TableRow from '@material-ui/core/TableRow';
+import TableCell from '@material-ui/core/TableCell';
 import Paper from '@material-ui/core/Paper';
 import TableBody from '@material-ui/core/TableBody';
+import React, { useEffect, useState } from 'react';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles({
   table: {
@@ -12,35 +16,25 @@ const useStyles = makeStyles({
   },
 });
 
-const customers = [
-  {
-  'id': 1,
-  'image': 'https://placeimg.com/64/64/1',
-  'name': '양준호',
-  'birthday': '980327',
-  'gender': '남자',
-  'job': '대학생'
-  },
-  {
-    'id': 2,
-    'image': 'https://placeimg.com/64/64/2',
-    'name': '양경선',
-    'birthday': '630903',
-    'gender': '남자',
-    'job': '한의사'
-  },
-  {
-    'id': 3,
-    'image': 'https://placeimg.com/64/64/3',
-    'name': '양진솔',
-    'birthday': '950301',
-    'gender': '여자',
-    'job': '취준생'
-  }
-]
+function getCustomers() {
+  return fetch('api/customers')
+    .then(data => data.json())
+}
 
 function App() {
   const classes = useStyles();
+  const [customers, setCustomers] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    getCustomers()
+      .then(items => {
+        if(mounted) {
+          setCustomers(items)
+        }
+      })
+    return () => mounted =false;
+  }, [])
 
   return (
     <div className="App">
@@ -48,9 +42,14 @@ function App() {
         <Table className={classes.table} aria-label="customer table">
           <Customertablehead />
           <TableBody>
-          {customers.map(c => {
-            return <Customertablebody key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job} />
-          })}
+          { customers ? customers.map(c => {
+              return ( <Customertablebody key={c.id} id={c.id} image={c.image} name={c.name} birthday={c.birthday} gender={c.gender} job={c.job} />)
+          }) : 
+          <TableRow>
+            <TableCell colSpan="6" align="center">
+              <CircularProgress />
+            </TableCell>
+          </TableRow>}
           </TableBody>
         </Table>
       </TableContainer>
